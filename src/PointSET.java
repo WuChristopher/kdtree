@@ -9,6 +9,7 @@ import java.util.TreeSet;
  * Created by zack on 18/10/2016.
  */
 public class PointSET {
+    // use the system red-black tree set to store all the points
     private TreeSet<Point2D> trSet = new TreeSet<>();
 
     // constructor
@@ -42,6 +43,8 @@ public class PointSET {
 
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new NullPointerException("range");
+        // iterate through the tree set, find each point in range
+        // and add them to the arraylist which is iterable
         ArrayList<Point2D> arrList = new ArrayList<>();
         for (Point2D p : trSet) {
             if (insideRect(p, rect)) arrList.add(p);
@@ -49,6 +52,10 @@ public class PointSET {
         return arrList;
     }
 
+    /**
+     * The brute-force for nearest method is straightforward, iterate through
+     * the tree set and find the closest point to the query one.
+     */
     public Point2D nearest(Point2D p) {
         if (p == null) throw new NullPointerException("nearest");
         if (isEmpty()) return null;
@@ -64,12 +71,19 @@ public class PointSET {
         return np;
     }
 
+    /**
+     * To check if the point is inside a rect, we can also use the contains
+     * method of the RectHV, which returns a boolean.
+     */
     private boolean insideRect(Point2D p, RectHV rect) {
         if (p.x() < rect.xmin() || p.x() > rect.xmax()) return false;
         if (p.y() < rect.ymin() || p.y() > rect.ymax()) return false;
         return true;
     }
 
+    /**
+     * The main method is used for unit testing.
+     */
     public static void main(String[] args) {
         RectHV rectHV_1 = new RectHV(0.0, 0.0, 1.0, 1.0);
         RectHV rectHV_2 = new RectHV(0.5, 0.5, 0.7, 0.7);

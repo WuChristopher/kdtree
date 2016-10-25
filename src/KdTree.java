@@ -7,18 +7,21 @@ import java.util.ArrayList;
 
 /**
  * Created by zack on 21/10/2016.
+ * This is the 2d tree implementation, which can be used to find all points
+ * in a given rectangle, search the closest point to the query point.
  */
 public class KdTree {
     // fields
     private Node root = null;
-    // static inner class
+    // static inner class, cause' no need to adapt for the generic type
+    // use static inner class to save 8 bytes.
     private static class Node {
-        private Point2D p;
-        private RectHV rect;
-        private Node lb;
-        private Node rt;
-        private int count;
-        private boolean vertOrient;
+        private Point2D p; // this node's point
+        private RectHV rect; // the rect divided by this node's point, axis-aligned rect
+        private Node lb; // sub-tree for left or bottom
+        private Node rt; // sub-tree for right or top
+        private int count; // all nodes in this tree
+        private boolean vertOrient; // orientation of the node, divide vertically or horizontally
     }
     // constructor
     public KdTree() {}
@@ -32,11 +35,17 @@ public class KdTree {
         return size(root);
     }
 
+    /**
+     * The public API for inserting, calling the recursive private method
+     */
     public void insert(Point2D p) {
         if (p == null) throw new NullPointerException("insert");
         root = insert(root, p, true, 0.0, 0.0, 1.0, 1.0);
     }
 
+    /**
+     * Traverse the tree per the point's coordinates and the Node's orientation
+     */
     public boolean contains(Point2D p) {
         if (p == null) throw new NullPointerException("contains");
         Node x = root;
@@ -53,10 +62,18 @@ public class KdTree {
         return false;
     }
 
+    /**
+     * The public API for drawing, calling the recursive private method
+     */
     public void draw() {
         draw(root);
     }
 
+    /**
+     * The public API for find all points contained in a given rectangle,
+     * calling the recursive private method. All found points are added to
+     * the iterable ArrayList.
+     */
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new NullPointerException("range");
         ArrayList<Point2D> arrl = new ArrayList<>();
@@ -64,11 +81,29 @@ public class KdTree {
         return arrl;
     }
 
+    /**
+     * The public API for finding the closest point, calling the recursive
+     * private method. Note that we use the positive infinity as the initial
+     * distance between our points and the query point.
+     */
     public Point2D nearest(Point2D p) {
         if (p == null) throw new NullPointerException("nearest");
         return nearest(root, p, Double.POSITIVE_INFINITY);
     }
 
+    /**
+     * The RectHV's distanceToPoint returns zero if the rect contains that point.
+     * So if the Node's point's distance to the query point is zero, the Node is found.
+     * Otherwise, search per the pruning rule: only try traversing the sub-tree whose
+     * axis-aligned rect's distance the query point is less than the current min distance.
+     * And always search the sub-tree with the shorter distance from its axis-aligned rect
+     * to the query point first. Note that when the current Node's distance to the query
+     * point is less than the argument minDist, update the minDist and record the current
+     * Node(or its point) as the closest. After having traversed the sub trees, if any
+     * closer Node is returned, then the returned Node is the closest, if no returned Node,
+     * the current Node is the closest. Actually this pruning rule is a depth-first search
+     * algorithm.
+     */
     private Point2D nearest(Node x, Point2D p, double minDist) {
         if (x == null) return null;
         double dist = p.distanceSquaredTo(x.p);
@@ -109,6 +144,11 @@ public class KdTree {
         return null;
     }
 
+    /**
+     * The RectHV intersects method returns true if one rect lies in the other.
+     * Thus the pruning rule is: only search sub trees whose axis-aligned rectangles
+     * intersect with the given rect.
+     */
     private void insideRect(Node x, RectHV rect, ArrayList<Point2D> arrl) {
         if (x == null) return;
         if (rect.contains(x.p)) arrl.add(x.p);
@@ -118,6 +158,12 @@ public class KdTree {
             insideRect(x.rt, rect, arrl);
     }
 
+    /**
+     * If the point's x-coordinate is smaller than the current Node's point's,
+     * insert the point to the left-bottom sub tree, otherwise the right-top.
+     * Note that check if the points equals the current Node's point and discard
+     * the point if it's true.
+     */
     private Node insert(Node x, Point2D p, boolean vertOrient,
                         double xmin, double ymin, double xmax, double ymax) {
         if (x == null) {
@@ -159,6 +205,10 @@ public class KdTree {
         return x.count;
     }
 
+    /**
+     * Use the axis-aligned rect, which is divided by the Node's point, and
+     * the Node's point itself to construct the dividing line segment.
+     */
     private void draw(Node x) {
         if (x == null) return;
         StdDraw.setPenRadius(0.01);
@@ -181,16 +231,6 @@ public class KdTree {
     }
 
     public static void main(String[] args) {
-//        Point2D p1 = new Point2D(0.5, 0.2);
-//        Point2D p2 = new Point2D(0.5, 0.4);
-//        Point2D p3 = new Point2D(0.5, 0.6);
-//        Point2D p4 = new Point2D(0.5, 0.8);
-//        KdTree kdTree = new KdTree();
-//        kdTree.insert(p1);
-//        kdTree.insert(p2);
-//        kdTree.insert(p3);
-//        kdTree.insert(p4);
-//        kdTree.draw();
         String filename = args[0];
         In in = new In(filename);
 
