@@ -24,9 +24,10 @@
 hs_err_pid*
 
 .DS_Store
-.gitignore
 .idea/workspace.xml
 out/
 src/.DS_Store
 .idea/dbnavigator.xml
 .idea/kotlinc.xml
+.gitignore
+lib/
