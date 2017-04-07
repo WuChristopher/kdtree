@@ -29,5 +29,4 @@ out/
 src/.DS_Store
 .idea/dbnavigator.xml
 .idea/kotlinc.xml
-.gitignore
 lib/
